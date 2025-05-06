@@ -1,4 +1,4 @@
-Patient_ID,Clinical_Group,Hornerin,SFN,Age,Gender,Diabetic_Duration,eGFR,Albuminuria,HB,EAG,FBS,RBS,HbA1C,Systolic_BP,Diastolic_BP,BUN,Total_Protein,Serum_Albumin,Serum_Globulin,AG_Ratio,Serum_Creatinine,Sodium  ,Potassium,Chloride ,Bicarbonate,SGOT,SGPT,Alkaline_Phosphatase ,T_Bil,D_Bil,HDL,LDL,CHOL,Chol_HDL_ratio,TG
+Patient_ID,Clinical_Group,Hornerin,SFN,Age,Gender,Diabetic_Duration,eGFR,Albuminuria,HB,EAG,FBS,RBS,HbA1C,Systolic_BP,Diastolic_BP,BUN,Total_Protein,Serum_Albumin,Serum_Globulin,AG_Ratio,Serum_Creatinine,Sodium,Potassium,Chloride ,Bicarbonate,SGOT,SGPT,Alkaline_Phosphatase ,T_Bil,D_Bil,HDL,LDL,CHOL,Chol_HDL_ratio,TG
 1,DM,26.7,290.5,60,M,15,101,-,9.6,NaN,NaN,255,10.5,110,70,13,NaN,2.6,2.3,NaN,0.8,134,3.9,101,26,84,145,65,0.53,0.09,46,79,131,NaN,47
 2,DM,13.9,97.0,75,M,1,70,2+,16,NaN,NaN,142,6.8,130,90,17,5.3,2.9,2.4,1.2,1.1,125,3,85,31,55,15,66,1.75,0.58,40,75,126,NaN,40
 3,DM,13.7,76.0,69,M,2,46,3+,14.4,137,NaN,184,6.4,140,100,27,NaN,3.5,2.4,NaN,1.6,135,3.1,101,23,107,48,62,1.56,0.39,28,75,118,4.2,187
