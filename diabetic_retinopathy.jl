@@ -1,6 +1,10 @@
 # Import the necessary packages
 using CSV
 using DataFrames
+using ScientificTypes
+
+using Pkg
+Pkg.add("JLTableViewer")
 
 # Specify the path to your CSV file
 # (Can be a relative path like this, or an absolute path like "/home/user/data/my_data.csv")
@@ -13,8 +17,8 @@ filepath = "diabetic_retinopathy.csv"
     df = CSV.read(filepath, DataFrame)
 
     # Print the DataFrame to see the contents
-    println("Successfully read CSV into DataFrame:")
-    println(df.Hornerin)
+    # println("Successfully read CSV into DataFrame:")
+    # println(df.Hornerin)
 
     # You can now work with the DataFrame 'df'
     # println("\nAccessing data:")
@@ -27,3 +31,8 @@ filepath = "diabetic_retinopathy.csv"
 #     showerror(stdout, e)
 #     println()
 # end
+
+df_raw = CSV.read(filepath, DataFrame, missingstring=["NaN", "Nil", "NIL", "-"], stripwhitespace=true)
+# rename!(df_raw, Symbol("Sodium  ") => :Sodium) # Fix header space
+println(first(df_raw, 5))
+println(describe(df_raw, :nmissing)) # Check missing counts
