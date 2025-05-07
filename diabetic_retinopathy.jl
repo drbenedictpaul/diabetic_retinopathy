@@ -1,38 +1,58 @@
-# Import the necessary packages
 using CSV
 using DataFrames
-using ScientificTypes
+using Impute
+using StatsBase
+using Random
+using PrettyTables
 
-using Pkg
-Pkg.add("JLTableViewer")
+# Load the dataset
+data = CSV.read("diabetic_retinopathy.csv", DataFrame)
 
-# Specify the path to your CSV file
-# (Can be a relative path like this, or an absolute path like "/home/user/data/my_data.csv")
-filepath = "diabetic_retinopathy.csv"
+# # Display basic information
+# println("Dataset Info:")
+# println(describe(data))
+# println("First few rows:")
+# println(first(data, 5))
 
-# try
-    # Read the CSV file into a DataFrame
-    # CSV.read automatically handles headers and tries to infer data types.
-    # It also recognizes standard missing values (like the empty field for Charlie).
-    df = CSV.read(filepath, DataFrame)
+# # Check class distribution
+# println("Class Distribution:")
+# println(combine(groupby(data, :Clinical_Group), nrow => :count))
 
-    # Print the DataFrame to see the contents
-    # println("Successfully read CSV into DataFrame:")
-    # println(df.Hornerin)
+# Replace "NIL" and "Nil" with missing
+for col in names(data)
+    data[!, col] = replace(data[!, col], "NIL" => missing, "Nil" => missing, "NaN" => missing)
+end
 
-    # You can now work with the DataFrame 'df'
-    # println("\nAccessing data:")
-    # println("Value for Bob: ", df[df.Name .== "Bob", :Value][1]) # Example access
-    # println("Data Types of columns:")
-    # println(eltype.(eachcol(df))) # Show inferred types per column
+# Separate numerical and categorical columns
+numerical_cols = [:Hornerin, :SFN, :Age, :Diabetic_Duration, :eGFR, :HB, :EAG, :FBS, :RBS, :HbA1C, 
+                  :Systolic_BP, :Diastolic_BP, :BUN, :Total_Protein, :Serum_Albumin, :Serum_Globulin, 
+                  :AG_Ratio, :Serum_Creatinine, :Sodium, :Potassium, :Chloride, :Bicarbonate, :SGOT, 
+                  :SGPT, :Alkaline_Phosphatase, :T_Bil, :D_Bil, :HDL, :LDL, :CHOL, :Chol_HDL_ratio, :TG]
+categorical_cols = [:Gender, :Albuminuria]
 
-# catch e
-#     println("Error reading CSV file: ", filepath)
-#     showerror(stdout, e)
-#     println()
-# end
+# Impute numerical columns with srs
+for col in numerical_cols
+    if eltype(data[!, col]) <: Union{Missing, Number}
+        rng = MersenneTwister(42)
+        data[!, col] = Impute.srs(data[!, col], rng=rng)
+    end
+end
 
-df_raw = CSV.read(filepath, DataFrame, missingstring=["NaN", "Nil", "NIL", "-"], stripwhitespace=true)
-# rename!(df_raw, Symbol("Sodium  ") => :Sodium) # Fix header space
-println(first(df_raw, 5))
-println(describe(df_raw, :nmissing)) # Check missing counts
+# Impute categorical columns with mode
+for col in categorical_cols
+    if eltype(data[!, col]) <: Union{Missing, String}
+        mode_val = mode(skipmissing(data[!, col]))
+        data[!, col] = coalesce.(data[!, col], mode_val)
+    end
+end
+
+using MLJ, MLJBase, DataFrames
+
+# Encode categorical variables
+data[!, :Clinical_Group] = categorical(data[!, :Clinical_Group])
+hot_encoder = OneHotEncoder(; features=[:Gender, :Albuminuria], drop_last=false)
+mach = machine(hot_encoder, data)
+fit!(mach)
+data_encoded = MLJBase.transform(mach, data)
+data_encoded = DataFrames.select(data_encoded, Not([:Gender, :Albuminuria]))
+pretty_table(data_encoded)
