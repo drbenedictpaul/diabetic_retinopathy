@@ -30,41 +30,34 @@ end
 
 # println(data)
 # missing_data = data 
-pretty_table(data)
+# pretty_table(data)
 
 CSV.write("diabetic_retinopathy_missing_removed.csv", data)
 
-# Separate numerical and categorical columns
-numerical_cols = [:Hornerin, :SFN, :Age, :Diabetic_Duration, :eGFR, :HB, :EAG, :FBS, :RBS, :HbA1C, 
-                  :Systolic_BP, :Diastolic_BP, :BUN, :Total_Protein, :Serum_Albumin, :Serum_Globulin, 
-                  :AG_Ratio, :Serum_Creatinine, :Sodium, :Potassium, :Chloride, :Bicarbonate, :SGOT, 
-                  :SGPT, :Alkaline_Phosphatase, :T_Bil, :D_Bil, :HDL, :LDL, :CHOL, :Chol_HDL_ratio, :TG]
-categorical_cols = [:Gender, :Albuminuria]
+using Statistics  # Required for median calculation
 
-# Impute numerical columns with srs
-for col in numerical_cols
-    if eltype(data[!, col]) <: Union{Missing, Number}
-        rng = MersenneTwister(42)
-        data[!, col] = Impute.srs(data[!, col], rng=rng)
-    end
+# Loop through each clinical group
+for group in unique(data[!, :Clinical_Group])
+    # Filter rows for the current group
+    group_mask = data[!, :Clinical_Group] .== group
+    # Calculate median of non-missing Hornerin values for this group
+    group_median = median(skipmissing(data[group_mask, :Hornerin]))
+    # Replace missing Hornerin values in this group with the group median
+    data[group_mask, :Hornerin] = coalesce.(data[group_mask, :Hornerin], group_median)
 end
 
-# Impute categorical columns with mode
-for col in categorical_cols
-    if eltype(data[!, col]) <: Union{Missing, String}
-        mode_val = mode(skipmissing(data[!, col]))
-        data[!, col] = coalesce.(data[!, col], mode_val)
-    end
+# println(data[!, :Hornerin])
+
+using Statistics  # Required for median calculation
+
+# Loop through each clinical group
+for group in unique(data[!, :Clinical_Group])
+    # Filter rows for the current group
+    group_mask = data[!, :Clinical_Group] .== group
+    # Calculate median of non-missing SFN values for this group
+    group_median = median(skipmissing(data[group_mask, :SFN]))
+    # Replace missing SFN values in this group with the group median
+    data[group_mask, :SFN] = coalesce.(data[group_mask, :SFN], group_median)
 end
 
-using MLJ, MLJBase, DataFrames
-
-# Encode categorical variables
-data[!, :Clinical_Group] = categorical(data[!, :Clinical_Group])
-hot_encoder = OneHotEncoder(; features=[:Gender, :Albuminuria], drop_last=false)
-mach = machine(hot_encoder, data)
-fit!(mach)
-data_encoded = MLJBase.transform(mach, data)
-data_encoded = DataFrames.select(data_encoded, Not([:Gender, :Albuminuria]))
-pretty_table(data_encoded)
-CSV.write("diabetic_retinopathy_cleaned.csv", data_encoded)
+println(data[!, :SFN])
