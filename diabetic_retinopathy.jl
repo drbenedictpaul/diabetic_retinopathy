@@ -19,10 +19,18 @@ DataFrames.describe(data)
 # println("Class Distribution:")
 # println(combine(groupby(data, :Clinical_Group), nrow => :count))
 
-# Replace "NIL" and "Nil" with missing
 for col in names(data)
-    data[!, col] = replace(data[!, col], "NIL" => missing, "Nil" => missing, "NaN" => missing, "-" => missing)
+    # Replace string "NaN"
+    data[!, col] = replace(data[!, col], "NaN" => missing)
+    # Replace floating-point NaN for numerical columns
+    if eltype(data[!, col]) <: Union{Missing, Number}
+        data[!, col] = map(x -> isequal(x, NaN) ? missing : x, data[!, col])
+    end
 end
+
+# println(data)
+# missing_data = data 
+pretty_table(data)
 
 CSV.write("diabetic_retinopathy_missing_removed.csv", data)
 
