@@ -7,6 +7,7 @@ using PrettyTables
 
 # Load the dataset
 data = CSV.read("diabetic_retinopathy.csv", DataFrame)
+DataFrames.describe(data)
 
 # # Display basic information
 # println("Dataset Info:")
@@ -20,8 +21,10 @@ data = CSV.read("diabetic_retinopathy.csv", DataFrame)
 
 # Replace "NIL" and "Nil" with missing
 for col in names(data)
-    data[!, col] = replace(data[!, col], "NIL" => missing, "Nil" => missing, "NaN" => missing)
+    data[!, col] = replace(data[!, col], "NIL" => missing, "Nil" => missing, "NaN" => missing, "-" => missing)
 end
+
+CSV.write("diabetic_retinopathy_missing_removed.csv", data)
 
 # Separate numerical and categorical columns
 numerical_cols = [:Hornerin, :SFN, :Age, :Diabetic_Duration, :eGFR, :HB, :EAG, :FBS, :RBS, :HbA1C, 
@@ -56,3 +59,4 @@ fit!(mach)
 data_encoded = MLJBase.transform(mach, data)
 data_encoded = DataFrames.select(data_encoded, Not([:Gender, :Albuminuria]))
 pretty_table(data_encoded)
+CSV.write("diabetic_retinopathy_cleaned.csv", data_encoded)
