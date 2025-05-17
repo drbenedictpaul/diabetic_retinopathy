@@ -61,4 +61,5 @@ for group in unique(data[!, :Clinical_Group])
 end
 
 # println(data[!, :SFN])
-CSV.write("Hornerin_SFN_imputed.csv",data)
+# CSV.write("Hornerin_SFN_imputed.csv",data)
+println("Missing values in SFN: ", sum(ismissing.(data[!, :SFN])))
