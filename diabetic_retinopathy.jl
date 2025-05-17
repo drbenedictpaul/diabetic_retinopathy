@@ -60,4 +60,5 @@ for group in unique(data[!, :Clinical_Group])
     data[group_mask, :SFN] = coalesce.(data[group_mask, :SFN], group_median)
 end
 
-println(data[!, :SFN])
+# println(data[!, :SFN])
+CSV.write("Hornerin_SFN_imputed.csv",data)
