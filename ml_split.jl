@@ -97,3 +97,78 @@ println("Top 5 Feature Importances:")
 for (feature, importance) in feature_importance[1:5]
     println("$feature: ", round(importance, digits=3))
 end
+
+using MLJ
+using MLJBase
+using DataFrames
+using DecisionTree  # For impurity_importance
+using Random
+using Statistics  # For mean and std
+using StatisticalMeasures  # For measures
+using Plots  # For plotting
+
+# Load Random Forest Classifier
+RandomForestClassifier = @load RandomForestClassifier pkg=DecisionTree verbosity=0
+model = RandomForestClassifier(n_trees=100, max_depth=5, rng=123)
+
+# Create a machine with full dataset (X, y)
+X = DataFrames.select(data, Not(:Clinical_Group))
+y = coerce(data[!, :Clinical_Group], Finite)
+mach = machine(model, X, y)
+
+# Define measures
+acc = StatisticalMeasures.accuracy
+prec = StatisticalMeasures.multiclass_precision
+rec = StatisticalMeasures.multiclass_recall
+f1 = StatisticalMeasures.multiclass_f1score
+
+# Perform 5-fold cross-validation
+cv = CV(nfolds=5, rng=123)
+eval_results = evaluate!(mach, resampling=cv, measures=[acc, prec, rec, f1])
+
+# Extract per-fold measurements
+acc_per_fold = eval_results.per_fold[1]
+prec_per_fold = eval_results.per_fold[2]
+rec_per_fold = eval_results.per_fold[3]
+f1_per_fold = eval_results.per_fold[4]
+
+# Print cross-validation results
+println("5-Fold CV Accuracy: ", round(mean(acc_per_fold), digits=3), " ± ", round(std(acc_per_fold), digits=3))
+println("5-Fold CV Precision: ", round(mean(prec_per_fold), digits=3))
+println("5-Fold CV Recall: ", round(mean(rec_per_fold), digits=3))
+println("5-Fold CV F1-Score: ", round(mean(f1_per_fold), digits=3))
+
+# Save CV results to CSV
+cv_results = DataFrame(
+    Fold = 1:5,
+    Accuracy = acc_per_fold,
+    Precision = prec_per_fold,
+    Recall = rec_per_fold,
+    F1_Score = f1_per_fold
+)
+CSV.write("cv_results.csv", cv_results)
+
+# Train model on full dataset for feature importance
+MLJ.fit!(mach)
+
+# Compute feature importance
+fit_results = fitted_params(mach)
+forest = fit_results.forest
+importance = impurity_importance(forest)
+feature_importance = sort(collect(zip(names(X), importance)), by=x->x[2], rev=true)
+println("Top 5 Feature Importances:")
+for (feature, importance) in feature_importance[1:5]
+    println("$feature: ", round(importance, digits=3))
+end
+
+# Save feature importance to CSV
+importance_df = DataFrame(Feature = names(X), Importance = importance)
+CSV.write("feature_importance.csv", importance_df)
+
+# Plot feature importance
+top_n = 10  # Plot top 10 features
+top_features = first(feature_importance, top_n)
+features = [f[1] for f in top_features]
+importances = [f[2] for f in top_features]
+bar(features, importances, title="Top $top_n Feature Importances", xlabel="Feature", ylabel="Importance", legend=false, size=(800, 400), rotation=45)
+savefig("feature_importance_plot.png")
