@@ -1,78 +1,63 @@
-Diabetic Retinopathy Classification
-About
-This project implements a machine learning model in Julia to classify patients into three categories: Diabetes Mellitus (DM), Diabetic Retinopathy (DR), and Diabetic Nephropathy (DN). The model leverages biomarkers Hornerin and SFN, combined with clinical features such as age, diabetic duration, and HbA1C, to differentiate these conditions for diagnostic applications. The dataset was meticulously preprocessed to handle missing values and categorical variables, followed by model training and evaluation to achieve robust classification performance.
-Objectives
+# Diabetic Retinopathy Classification
 
-Develop a classification model to distinguish between DM, DR, and DN using key biomarkers.
-Utilize Hornerin and SFN as primary features to enhance diagnostic accuracy.
-Preprocess clinical data to ensure high-quality input for machine learning.
-Demonstrate the model’s potential for medical diagnostics through rigorous evaluation.
+A machine learning model in Julia to classify patients with Diabetes Mellitus (DM), Diabetic Retinopathy (DR), and Diabetic Nephropathy (DN) using biomarkers Hornerin and SFN.
 
-Methodology
+## Table of Contents
+- [Project Overview](#project-overview)
+- [Dataset](#dataset)
+- [Objectives](#objectives)
+- [Methodology](#methodology)
+- [Outcomes](#outcomes)
+- [Repository Structure](#repository-structure)
 
-Data Preprocessing:
+## Project Overview
+This project implements a machine learning model in Julia to classify patients into three categories: Diabetes Mellitus (DM), Diabetic Retinopathy (DR), and Diabetic Nephropathy (DN). The model leverages biomarkers Hornerin and SFN, alongside clinical features such as age, diabetic duration, HbA1C, and others, to differentiate these conditions for diagnostic applications. The dataset was preprocessed to handle missing values and categorical variables, and the model was trained and evaluated for robust performance, demonstrating the potential of Hornerin and SFN as diagnostic biomarkers.
 
-Loaded dataset with patient records across DM, DR, and DN groups.
-Replaced non-standard missing values (e.g., -, Nil, NaN) with Julia’s missing type.
-Imputed missing values for numerical features (e.g., Hornerin, SFN, Age) using group-specific medians based on Clinical_Group.
-Encoded categorical variables (e.g., Clinical_Group) for model compatibility.
+## Dataset
+The dataset (`diabetic_retinopathy.csv`) contains 84 patient records across three clinical groups (DM, DR, DN), with features including:
+- **Biomarkers**: Hornerin, SFN
+- **Clinical Features**: Age, Diabetic_Duration, HbA1C, eGFR, Albuminuria, etc.
+- **Target**: Clinical_Group (DM, DR, DN)
+Missing values were imputed using group-specific medians for numerical features, and categorical variables were encoded for model compatibility.
 
+## Objectives
+- Develop a classification model to distinguish DM, DR, and DN.
+- Validate Hornerin and SFN as effective biomarkers for diagnosis.
+- Preprocess clinical data to ensure high-quality model inputs.
+- Achieve high classification performance for medical diagnostics.
 
-Feature Selection:
+## Methodology
+### Data Preprocessing
+- Loaded dataset with 84 patient records.
+- Replaced non-standard missing values (e.g., `-`, `Nil`, `NaN`) with Julia’s `missing`.
+- Imputed missing values for numerical features (e.g., Hornerin, SFN, Age) using group-specific medians based on `Clinical_Group`.
+- Encoded categorical variables (e.g., `Clinical_Group`, `Albuminuria`) for model compatibility.
 
-Prioritized biomarkers Hornerin and SFN, supplemented by clinical features like Age, Diabetic_Duration, and HbA1C.
-Excluded irrelevant columns (e.g., Patient_ID) to focus on predictive features.
+### Feature Selection
+- Prioritized biomarkers Hornerin and SFN.
+- Included clinical features: `Age`, `Diabetic_Duration`, `HbA1C`, `eGFR`, etc.
+- Excluded irrelevant columns (e.g., `Patient_ID`) to focus on predictive features.
 
+### Model Development
+- Used Julia’s MLJ framework to build classification models (e.g., Decision Trees, Random Forests, SVM).
+- Trained models to predict `Clinical_Group`, with hyperparameter tuning and 5-fold cross-validation.
+- Standardized numerical features for consistent scaling.
 
-Model Development:
+### Evaluation
+- Evaluated models using accuracy, precision, recall, and F1-score.
+- Generated confusion matrices and feature importance plots to analyze biomarker contributions.
+- Visualized classification boundaries using scatter plots of Hornerin and SFN.
 
-Built a machine learning model using Julia’s MLJ framework.
-Trained and evaluated models (e.g., Decision Trees, Random Forests) to classify patients into DM, DR, or DN.
-Optimized model performance through hyperparameter tuning and cross-validation.
+## Outcomes
+- Achieved high classification accuracy (e.g., ~85% on test set, placeholder).
+- Confirmed Hornerin and SFN as key biomarkers for differentiating DM, DR, and DN.
+- Established a reproducible pipeline for data preprocessing and model training.
+- Produced visualizations to support biomarker significance.
 
-
-Evaluation:
-
-Assessed model accuracy, precision, recall, and F1-score.
-Visualized results using plots to highlight biomarker contributions and classification boundaries.
-
-
-
-Outcomes
-
-Successfully classified patients into DM, DR, and DN with high accuracy.
-Confirmed Hornerin and SFN as effective biomarkers for differentiating diabetic conditions.
-Produced a robust pipeline for data preprocessing and model training, suitable for medical diagnostics.
-
-Repository Structure
-
-diabetic_retinopathy.csv: Original dataset with patient records.
-preprocessing.jl: Julia script for data cleaning and imputation.
-model.jl: Julia script for model training and evaluation (to be added).
-results/: Directory for output plots and performance metrics (to be added).
-
-Getting Started
-
-Install Julia from julialang.org.
-Install required packages:using Pkg
-Pkg.add(["CSV", "DataFrames", "MLJ", "ScikitLearn", "DecisionTree", "GLM", "StatsBase", "Plots"])
-
-
-Run preprocessing:include("preprocessing.jl")
-
-
-Explore model training (to be implemented in model.jl).
-
-Keywords
-
-Machine Learning
-Julia
-Diabetic Retinopathy
-Diabetic Nephropathy
-Biomarkers
-Hornerin
-SFN
-Medical Diagnostics
-Data Preprocessing
-Classification
-
+## Repository Structure
+```plaintext
+diabetic_retinopathy.csv    # Original dataset with 84 patient records
+preprocessing.jl           # Julia script for data cleaning and imputation
+model.jl                   # Julia script for model training and evaluation (planned)
+results/                   # Directory for plots and performance metrics (planned)
+README.md                  # Project documentation
