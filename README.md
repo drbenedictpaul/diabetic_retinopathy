@@ -61,3 +61,22 @@ preprocessing.jl           # Julia script for data cleaning and imputation
 model.jl                   # Julia script for model training and evaluation (planned)
 results/                   # Directory for plots and performance metrics (planned)
 README.md                  # Project documentation
+.
+├── 01_clean_data.jl                    # Script to clean raw data and rename groups
+├── 02_run_analysis.jl                  # Main script for leakage-proof CV and ablation
+├── 03_generate_final_plots.jl          # Script to generate all paper figures
+│
+├── diabetic_retinopathy.csv            # --> Raw input dataset
+├── diabetic_retinopathy_ready_for_pipeline.csv # --> Cleaned output of Script 01
+│
+├── final_cv_results_model_B.csv        # --> Output: Accuracy from full model
+├── final_feature_importance.csv        # --> Output: Gini importances for all features
+│
+├── Fig1_Confusion_Matrix.png           # --> Output: Figure 1
+├── Fig2_Performance.png                # --> Output: Figure 2
+├── Fig3_Feature_Importance.png         # --> Output: Figure 3
+├── Fig4_Biomarkers.png                 # --> Output: Figure 4
+│
+├── Project.toml                        # Julia environment definitions
+├── Manifest.toml                       # Julia environment definitions
+└── README.md                           # This file
