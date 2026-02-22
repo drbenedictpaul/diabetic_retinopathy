@@ -9,8 +9,8 @@ using Plots
 using Measures
 using StatsPlots
 
-# Set plotting backend to 600 DPI for publication quality
-gr(size=(800, 600), dpi=600)
+# Set plotting backend to 600 DPI for publication quality, increased width slightly for margins
+gr(size=(1000, 600), dpi=600)
 
 # ---------------------------------------------------------
 # 1. SETUP & DATA CLEANING
@@ -79,14 +79,26 @@ MLJ.fit!(mach_rf, verbosity=0)
 y_hat = predict_mode(mach_rf, X_test)
 cm = confusion_matrix(y_hat, y[test])
 
+# --- LABEL SWAP LOGIC FOR FIG 1 ---
+label_map = Dict(
+    "DM (Disease Control)" => "T2DM",
+    "DR (Retinopathy)" => "DR only",
+    "Combined DR+DN" => "DR with DN"
+)
+# Get the exact order the ML model used, and swap the text
+original_levels = levels(y)
+new_labels = [get(label_map, String(l), String(l)) for l in original_levels]
+
 heatmap(cm.mat, 
     title="Confusion Matrix (Validation Set)",
-    xticks=(1:3, levels(y)),
-    yticks=(1:3, levels(y)),
+    xticks=(1:3, new_labels), 
+    yticks=(1:3, new_labels), 
     xlabel="True Class",
     ylabel="Predicted Class",
     color=:blues,
     aspect_ratio=1,
+    left_margin=15mm, # Prevents y-label from getting cut off
+    bottom_margin=10mm,
     annotations=[(j, i, text(string(cm.mat[i,j]), 12, :black, :center)) for i in 1:3, j in 1:3]
 )
 savefig("Fig1_Confusion_Matrix.png")
@@ -101,7 +113,7 @@ scores = [0.642, 0.630]
 errors = [0.114, 0.10] 
 
 bar(metrics, scores, yerr=errors, title="Validated Model Performance (Mean ± SD)",
-    ylabel="Score", ylim=(0, 1.0), color=[:blue, :purple], legend=false, size=(500, 500))
+    ylabel="Score", ylim=(0, 1.0), color=[:blue, :purple], legend=false, size=(600, 500), left_margin=15mm)
 savefig("Fig2_Performance.png")
 
 # ---------------------------------------------------------
@@ -116,7 +128,7 @@ if isfile("final_feature_importance.csv")
 
     bar(top_10.Feature, top_10.Importance, orientation=:h,
         title="Top 10 Predictors (Leakage-Free)", xlabel="Gini Importance",
-        legend=false, color=:dodgerblue, size=(800, 600), left_margin=10mm)
+        legend=false, color=:dodgerblue, size=(800, 600), left_margin=15mm, bottom_margin=10mm)
     savefig("Fig3_Feature_Importance.png")
 end
 
@@ -125,18 +137,28 @@ end
 # ---------------------------------------------------------
 println("Generating Fig 4: Biomarker Distributions...")
 
-# FIX: Create a fresh DataFrame for plotting and drop rows with missing values
-# so that the boxplot quantiles can be calculated.
 biomarker_plot_df = dropmissing(DataFrames.DataFrame(
     Clinical_Group = y,
     Hornerin = X.Hornerin,
     SFN = X.SFN
 ))
 
-p1 = @df biomarker_plot_df boxplot(:Clinical_Group, :Hornerin, title="Hornerin", ylabel="Value", color=:cyan, label=false)
-p2 = @df biomarker_plot_df boxplot(:Clinical_Group, :SFN, title="SFN", ylabel="", color=:orange, label=false)
+# --- LABEL SWAP & ORDERING LOGIC FOR FIG 4 ---
+# Replace the old strings with the new strings
+biomarker_plot_df.Clinical_Group = [get(label_map, String(val), String(val)) for val in biomarker_plot_df.Clinical_Group]
 
-plot(p1, p2, layout=(1, 2), size=(900, 500), bottom_margin=10mm)
+# Force the exact order to match your requested layout
+biomarker_plot_df.Clinical_Group = coerce(biomarker_plot_df.Clinical_Group, OrderedFactor)
+levels!(biomarker_plot_df.Clinical_Group, ["DR with DN", "T2DM", "DR only"])
+
+# Plot with explicit margins and units
+p1 = @df biomarker_plot_df boxplot(:Clinical_Group, :Hornerin, 
+    title="Hornerin", ylabel="Value (ng/mL)", color=:cyan, label=false, left_margin=15mm, bottom_margin=10mm)
+
+p2 = @df biomarker_plot_df boxplot(:Clinical_Group, :SFN, 
+    title="SFN", ylabel="Value (pg/mL)", color=:orange, label=false, left_margin=15mm, bottom_margin=10mm)
+
+plot(p1, p2, layout=(1, 2), size=(1000, 600))
 savefig("Fig4_Biomarkers.png")
 
 println("\nSuccess! 4 Figures created: Fig1-Fig4.png")
